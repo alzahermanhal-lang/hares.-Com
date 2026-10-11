@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>حارس — حماية بايعي الدفع عند الاستلام</title>
+<meta name="description" content="قائمة سوداء مشتركة بين بايعي إنستغرام بالعراق لأرقام الزبائن الذين يرجعون الطلبات.">
+<style>
+/* ===== حارس — تصميم موبايل أولاً ===== */
+:root{
+  --bg:#f4f5f7;
+  --card:#ffffff;
+  --ink:#1c2333;
+  --muted:#68758c;
+  --primary:#e8590c;
+  --primary-2:#f08c00;
+  --danger:#c92a2a;
+  --ok:#2b8a3e;
+  --border:#e6e9ef;
+  --radius:14px;
+  --shadow:0 4px 16px rgba(20,30,60,.08);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Segoe UI',Tahoma,Arial,sans-serif;
+  background:var(--bg);color:var(--ink);
+  line-height:1.6;min-height:100vh;
+}
+h1{font-size:1.35rem;margin-bottom:6px}
+h2{font-size:1.05rem}
+button{font-family:inherit;cursor:pointer}
+
+/* ---------- الدخول ---------- */
+.auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;
+  background:linear-gradient(160deg,#fff4ec,#fdeee0 60%,#fff)}
+.auth-card{background:var(--card);width:100%;max-width:400px;border-radius:20px;
+  padding:32px 26px;box-shadow:var(--shadow);border:1px solid var(--border)}
+.auth-card.center{text-align:center}
+.logo{font-size:1.9rem;font-weight:800;color:var(--primary);text-align:center;margin-bottom:4px}
+.logo.small{font-size:1.15rem;margin:0;text-align:right}
+.tagline{text-align:center;color:var(--muted);font-size:.85rem;margin-bottom:22px}
+.auth-tabs{display:flex;background:var(--bg);border-radius:12px;padding:4px;margin-bottom:20px}
+.auth-tabs button{flex:1;border:none;background:transparent;padding:10px;border-radius:9px;
+  font-weight:700;color:var(--muted)}
+.auth-tabs button.active{background:var(--card);color:var(--primary);box-shadow:var(--shadow)}
+label{display:block;font-size:.85rem;font-weight:700;margin:14px 0 6px}
+input,select{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;
+  font-size:1rem;font-family:inherit;background:#fff}
+input:focus,select:focus{outline:none;border-color:var(--primary)}
+.btn{border:none;border-radius:10px;padding:13px 20px;font-size:1rem;font-weight:700;transition:.2s}
+.btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff}
+.btn-primary:active{transform:scale(.97)}
+.btn-block{width:100%;margin-top:18px}
+.btn-ghost-dark{background:var(--bg);color:var(--ink);border:1px solid var(--border)}
+.hint{color:var(--muted);font-size:.8rem}
+.msg{margin-top:14px;font-size:.88rem;min-height:1.2em;text-align:center}
+.msg.ok{color:var(--ok)}
+.msg.err{color:var(--danger)}
+.terms-link{display:block;text-align:center;margin-top:16px;color:var(--muted);font-size:.82rem}
+
+/* ---------- الهيكل ---------- */
+#app-view{max-width:520px;margin:0 auto;padding-bottom:86px}
+.topbar{position:sticky;top:0;z-index:20;display:flex;justify-content:space-between;align-items:center;
+  background:var(--card);padding:14px 18px;border-bottom:1px solid var(--border)}
+.topbar-actions{display:flex;align-items:center;gap:10px}
+.admin-badge{background:#fff0e0;color:var(--primary);font-size:.72rem;font-weight:800;
+  padding:3px 10px;border-radius:99px;border:1px solid #ffd8b0}
+.btn-logout{background:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;
+  font-size:.8rem;color:var(--muted)}
+main{padding:22px 18px}
+
+/* ---------- البطاقات والنتائج ---------- */
+.check-box{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-top:16px}
+.result-card{margin-top:16px;border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);text-align:center}
+.result-card.clean{background:#eaf7ee;border:1px solid #bfe6c9}
+.result-card.warn{background:#fdecec;border:1px solid #f3c2c2}
+.result-card .big{font-size:2.2rem;font-weight:800;margin:4px 0}
+.result-card.clean .big{color:var(--ok)}
+.result-card.warn .big{color:var(--danger)}
+.result-card .meta{color:var(--muted);font-size:.88rem}
+
+/* ---------- النماذج داخل التطبيق ---------- */
+#view-report form{background:var(--card);border-radius:var(--radius);padding:20px;
+  box-shadow:var(--shadow);margin-top:14px}
+.agree-row{display:flex!important;gap:10px;align-items:flex-start;margin-top:18px;font-size:.8rem;
+  color:var(--muted);font-weight:400;cursor:pointer}
+.agree-row input{width:auto;margin-top:4px}
+
+/* ---------- قوائم البلاغات ---------- */
+.report-item{background:var(--card);border-radius:12px;padding:14px 16px;margin-bottom:12px;
+  box-shadow:var(--shadow);border:1px solid var(--border)}
+.report-item .row1{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.badge{font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:99px;white-space:nowrap}
+.badge.refused{background:#fdecec;color:var(--danger)}
+.badge.no_answer{background:#fff3d6;color:#b07d00}
+.badge.wrong_address{background:#e8eefc;color:#2f5bb7}
+.badge.other{background:#eceff3;color:var(--muted)}
+.report-item .date{font-size:.78rem;color:var(--muted)}
+.report-item .note{font-size:.85rem;color:var(--ink);margin-top:6px}
+.report-item .del{margin-top:10px;background:none;border:none;color:var(--danger);
+  font-size:.78rem;font-weight:700;padding:0}
+.empty{text-align:center;color:var(--muted);padding:40px 0;font-size:.9rem}
+.sub-title{margin:26px 0 12px;color:var(--muted);font-size:.95rem}
+.seller-item{display:flex;justify-content:space-between;align-items:center;gap:10px;
+  background:var(--card);border-radius:12px;padding:14px 16px;margin-bottom:10px;
+  box-shadow:var(--shadow);border:1px solid var(--border)}
+.seller-item .email{font-size:.82rem;overflow:hidden;text-overflow:ellipsis}
+.btn-approve{background:#eaf7ee;color:var(--ok);border:1px solid #bfe6c9;border-radius:8px;
+  padding:7px 14px;font-size:.8rem;font-weight:700;white-space:nowrap}
+.btn-del-report{background:#fdecec;color:var(--danger);border:1px solid #f3c2c2;border-radius:8px;
+  padding:7px 14px;font-size:.8rem;font-weight:700;white-space:nowrap}
+
+/* ---------- التنقل السفلي ---------- */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:20;display:flex;
+  background:var(--card);border-top:1px solid var(--border);max-width:520px;margin:0 auto}
+.nav-btn{flex:1;background:none;border:none;padding:10px 4px 12px;display:flex;flex-direction:column;
+  align-items:center;gap:2px;font-size:.72rem;font-weight:700;color:var(--muted)}
+.nav-btn span{font-size:1.25rem}
+.nav-btn.active{color:var(--primary)}
+
+/* ---------- تنبيه ---------- */
+.toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%);z-index:50;
+  background:var(--ink);color:#fff;padding:12px 22px;border-radius:99px;font-size:.88rem;
+  box-shadow:0 8px 24px rgba(0,0,0,.25);max-width:90%;text-align:center}
+
+@media(min-width:520px){
+  h1{font-size:1.55rem}
+}
+
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<!-- ==================== شاشة الدخول / التسجيل ==================== -->
+<div id="auth-view" class="auth-wrap">
+  <div class="auth-card">
+    <div class="logo">🛡️ حارس</div>
+    <p class="tagline">قائمة سوداء مشتركة لبايعي الدفع عند الاستلام في العراق</p>
+
+    <div class="auth-tabs">
+      <button id="tab-login" class="active">دخول</button>
+      <button id="tab-signup">حساب جديد</button>
+    </div>
+
+    <form id="login-form">
+      <label>البريد الإلكتروني</label>
+      <input type="email" id="login-email" required placeholder="you@example.com">
+      <label>كلمة السر</label>
+      <input type="password" id="login-password" required placeholder="••••••••">
+      <label class="agree-row"><input type="checkbox" id="show-login-pass"><span>إظهار كلمة السر 👁</span></label>
+      <button type="submit" class="btn btn-primary btn-block">دخول</button>
+    </form>
+
+    <form id="signup-form" hidden>
+      <label>البريد الإلكتروني</label>
+      <input type="email" id="signup-email" required placeholder="you@example.com">
+      <label>كلمة السر (6 أحرف على الأقل)</label>
+      <input type="password" id="signup-password" minlength="6" required placeholder="••••••••">
+      <p class="hint">بعد التسجيل، الحساب يحتاج موافقة الإدارة قبل الاستخدام.</p>
+      <button type="submit" class="btn btn-primary btn-block">إنشاء الحساب</button>
+    </form>
+
+    <p id="auth-msg" class="msg"></p>
+    <a class="terms-link" href="terms.html" target="_blank">📜 شروط الاستخدام</a>
+  </div>
+</div>
+
+<!-- ==================== شاشة انتظار الموافقة ==================== -->
+<div id="pending-view" class="auth-wrap" hidden>
+  <div class="auth-card center">
+    <div class="logo">⏳</div>
+    <h2>حسابك بانتظار الموافقة</h2>
+    <p class="hint">سيتم تفعيل حسابك بعد مراجعته من الإدارة. عادة خلال 24 ساعة.</p>
+    <button id="pending-logout" class="btn btn-ghost-dark btn-block">تسجيل الخروج</button>
+  </div>
+</div>
+
+<!-- ==================== التطبيق ==================== -->
+<div id="app-view" hidden>
+
+  <header class="topbar">
+    <div class="logo small">🛡️ حارس</div>
+    <div class="topbar-actions">
+      <span id="admin-badge" class="admin-badge" hidden>أدمن</span>
+      <button id="logout-btn" class="btn-logout">خروج</button>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ---------- فحص رقم ---------- -->
+    <section id="view-check" class="view">
+      <h1>فحص رقم زبون</h1>
+      <p class="hint">أدخل رقم الزبون قبل الشحن وتأكد إذا كان عنده سجل رجوع.</p>
+      <div class="check-box">
+        <input type="tel" id="check-phone" inputmode="tel" placeholder="07XXXXXXXX أو +9647XXXXXXXX">
+        <button id="check-btn" class="btn btn-primary btn-block">فحص 🔍</button>
+      </div>
+      <div id="check-result" class="result-card" hidden></div>
+    </section>
+
+    <!-- ---------- تبليغ ---------- -->
+    <section id="view-report" class="view" hidden>
+      <h1>تبليغ عن رجوع طلب</h1>
+      <p class="hint">بلّغ فقط إذا رجع الطلب فعلياً. التبليغ الكاذب يلغي الحساب.</p>
+      <form id="report-form">
+        <label>رقم الزبون</label>
+        <input type="tel" id="report-phone" inputmode="tel" required placeholder="07XXXXXXXX">
+        <label>تاريخ الطلب</label>
+        <input type="date" id="report-date" required>
+        <label>سبب الرجوع</label>
+        <select id="report-reason" required>
+          <option value="" disabled selected>اختر السبب</option>
+          <option value="refused">رفض الاستلام</option>
+          <option value="no_answer">ما رد على الهاتف</option>
+          <option value="wrong_address">عنوان خاطئ</option>
+          <option value="other">آخر</option>
+        </select>
+        <label>ملاحظة (اختياري)</label>
+        <input type="text" id="report-note" maxlength="500" placeholder="مثال: ولاية الرسالة، اسم المنطقة...">
+        <label class="agree-row">
+          <input type="checkbox" id="report-agree" required>
+          <span>أقر بأن هذا الطلب رجع فعلياً وأتحمل مسؤولية صحة البلاغ</span>
+        </label>
+        <button type="submit" class="btn btn-primary btn-block">إرسال البلاغ 📤</button>
+      </form>
+      <p id="report-msg" class="msg"></p>
+    </section>
+
+    <!-- ---------- بلاغاتي ---------- -->
+    <section id="view-mine" class="view" hidden>
+      <h1>بلاغاتي</h1>
+      <p class="hint">يمكنك حذف أي بلاغ خلال 24 ساعة من إضافته.</p>
+      <div id="my-reports"></div>
+    </section>
+
+    <!-- ---------- لوحة الأدمن ---------- -->
+    <section id="view-admin" class="view" hidden>
+      <h1>لوحة الإدارة</h1>
+
+      <h2 class="sub-title">⏳ بايعون بانتظار الموافقة</h2>
+      <div id="pending-sellers"></div>
+
+      <h2 class="sub-title">📋 كل البلاغات</h2>
+      <div id="all-reports"></div>
+    </section>
+
+  </main>
+
+  <!-- ---------- شريط تنقل سفلي ---------- -->
+  <nav class="bottom-nav">
+    <button data-view="check" class="nav-btn active"><span>🔍</span>فحص</button>
+    <button data-view="report" class="nav-btn"><span>📤</span>تبليغ</button>
+    <button data-view="mine" class="nav-btn"><span>📋</span>بلاغاتي</button>
+    <button data-view="admin" class="nav-btn" id="nav-admin" hidden><span>⚙️</span>الإدارة</button>
+  </nav>
+
+</div>
+
+<div id="toast" class="toast" hidden></div>
+
+<script>
+/* ============================================================
+   حارس (Hares) — MVP
+   ضع بيانات مشروع Supabase هنا (انظر دليل النشر DEPLOY.md)
+   ============================================================ */
+const SUPABASE_URL = "https://ipbayfdlojvfumjcetbd.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_I4jjoQqSVoGxZI86zQBX_Q_VuGv-QnF";
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* ---------- عناصر ---------- */
+const $ = (id) => document.getElementById(id);
+const authView = $("auth-view"), pendingView = $("pending-view"), appView = $("app-view");
+const toastEl = $("toast");
+
+let myProfile = null;
+
+/* ---------- تنبيه ---------- */
+let toastTimer;
+function toast(msg, isErr = false) {
+  toastEl.textContent = msg;
+  toastEl.style.background = isErr ? "#c92a2a" : "#1c2333";
+  toastEl.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => (toastEl.hidden = true), 3500);
+}
+
+/* ---------- رسائل ---------- */
+function setMsg(el, text, ok) {
+  el.textContent = text;
+  el.className = "msg " + (ok ? "ok" : "err");
+}
+
+/* ---------- التبويبات ---------- */
+$("tab-login").onclick = () => {
+  $("tab-login").classList.add("active");
+  $("tab-signup").classList.remove("active");
+  $("login-form").hidden = false;
+  $("signup-form").hidden = true;
+};
+$("tab-signup").onclick = () => {
+  $("tab-signup").classList.add("active");
+  $("tab-login").classList.remove("active");
+  $("signup-form").hidden = false;
+  $("login-form").hidden = true;
+};
+
+/* ---------- التسجيل ---------- */
+$("signup-form").onsubmit = async (e) => {
+  e.preventDefault();
+  const email = $("signup-email").value.trim();
+  const password = $("signup-password").value;
+  const { error } = await sb.auth.signUp({ email, password });
+  if (error) return setMsg($("auth-msg"), error.message, false);
+  setMsg($("auth-msg"), "✅ تم إنشاء الحساب. سجّل دخولك الآن — وسيتم تفعيل حسابك بعد الموافقة.", true);
+  $("tab-login").click();
+};
+
+/* ---------- ترجمة أخطاء الدخول لسبب حقيقي ---------- */
+function authErrorText(m) {
+  m = (m || "").toLowerCase();
+  if (m.includes("invalid login credentials"))
+    return "❌ الإيميل أو كلمة السر غلط — انتبه: لازم نفس كلمة السر اللي كتبتها بالتسجيل، وتأكد إن الكيبورد إنجليزي";
+  if (m.includes("email not confirmed"))
+    return "❌ الإيميل غير مؤكد — روح لـ SQL Editor وشغّل سطر التأكيد";
+  if (m.includes("too many"))
+    return "⏳ محاولات كثيرة — استنى دقيقة وجرب";
+  return "❌ خطأ: " + (m || "غير معروف");
+}
+
+/* ---------- الدخول ---------- */
+$("login-form").onsubmit = async (e) => {
+  e.preventDefault();
+  const { error } = await sb.auth.signInWithPassword({
+    email: $("login-email").value.trim(),
+    password: $("login-password").value,
+  });
+  if (error) return setMsg($("auth-msg"), authErrorText(error.message), false);
+  $("auth-msg").textContent = "";
+};
+
+/* ---------- إظهار/إخفاء كلمة السر ---------- */
+function bindShowPass(checkId, inputId) {
+  const c = $(checkId);
+  if (c) c.onchange = () => ($(inputId).type = c.checked ? "text" : "password");
+}
+bindShowPass("show-login-pass", "login-password");
+bindShowPass("show-signup-pass", "signup-password");
+
+/* ---------- الخروج ---------- */
+$("logout-btn").onclick = doLogout;
+$("pending-logout").onclick = doLogout;
+async function doLogout() {
+  await sb.auth.signOut();
+}
+
+/* ---------- جلسة الدخول ---------- */
+sb.auth.onAuthStateChange(async (_e, session) => {
+  if (!session) return show(authView);
+  const { data: profile } = await sb
+    .from("profiles")
+    .select("*")
+    .eq("id", session.user.id)
+    .single();
+  myProfile = profile;
+
+  if (!profile || !profile.approved) return show(pendingView);
+
+  show(appView);
+  $("admin-badge").hidden = !profile.is_admin;
+  $("nav-admin").hidden = !profile.is_admin;
+  if (profile.is_admin) loadAdmin();
+  loadMyReports();
+  switchView("check");
+});
+
+/* ---------- إظهار شاشة ---------- */
+function show(view) {
+  authView.hidden = pendingView.hidden = appView.hidden = true;
+  view.hidden = false;
+}
+
+/* ---------- التنقل بين الصفحات ---------- */
+document.querySelectorAll(".nav-btn").forEach((btn) => {
+  btn.onclick = () => switchView(btn.dataset.view);
+});
+function switchView(name) {
+  document.querySelectorAll(".view").forEach((v) => (v.hidden = true));
+  $("view-" + name).hidden = false;
+  document.querySelectorAll(".nav-btn").forEach((b) =>
+    b.classList.toggle("active", b.dataset.view === name)
+  );
+  if (name === "mine") loadMyReports();
+  if (name === "admin" && myProfile?.is_admin) loadAdmin();
+}
+
+/* ---------- 1) فحص رقم ---------- */
+$("check-btn").onclick = async () => {
+  const phone = $("check-phone").value.trim();
+  const box = $("check-result");
+  if (!phone) return toast("أدخل الرقم أولاً", true);
+  box.hidden = true;
+  const { data, error } = await sb.rpc("check_number", { p_raw: phone });
+  if (error) return toast(error.message, true);
+
+  const r = data[0];
+  if (!r || Number(r.report_count) === 0) {
+    box.className = "result-card clean";
+    box.innerHTML =
+      `<div style="font-size:2.5rem">✅</div>
+       <div class="big">نظيف</div>
+       <div class="meta">لا يوجد أي بلاغ على هذا الرقم</div>`;
+  } else {
+    box.className = "result-card warn";
+    box.innerHTML =
+      `<div style="font-size:2.5rem">⚠️</div>
+       <div class="big">${r.report_count} بلاغ</div>
+       <div class="meta">
+         آخر بلاغ بتاريخ: <b>${r.last_report_date}</b><br>
+         بلّغ عنه <b>${r.seller_count}</b> ${r.seller_count == 1 ? "بايع واحد" : "بايعين مختلفين"}<br>
+         <span style="color:var(--danger);font-weight:700">الحذر قبل الشحن!</span>
+       </div>`;
+  }
+  box.hidden = false;
+};
+$("check-phone").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") $("check-btn").click();
+});
+
+/* ---------- 2) تبليغ ---------- */
+$("report-form").onsubmit = async (e) => {
+  e.preventDefault();
+  const msg = $("report-msg");
+  const btn = e.target.querySelector("button[type=submit]");
+  btn.disabled = true;
+
+  const { error } = await sb.rpc("submit_report", {
+    p_raw: $("report-phone").value.trim(),
+    p_order_date: $("report-date").value,
+    p_reason: $("report-reason").value,
+    p_note: $("report-note").value.trim() || null,
+  });
+
+  btn.disabled = false;
+  if (error) return setMsg(msg, error.message, false);
+
+  setMsg(msg, "✅ تم إرسال البلاغ بنجاح", true);
+  e.target.reset();
+  setTimeout(() => (msg.textContent = ""), 4000);
+};
+
+/* ---------- 3) بلاغاتي ---------- */
+const REASONS = {
+  refused: "رفض الاستلام",
+  no_answer: "ما رد على الهاتف",
+  wrong_address: "عنوان خاطئ",
+  other: "آخر",
+};
+
+async function loadMyReports() {
+  const box = $("my-reports");
+  box.innerHTML = `<p class="empty">جاري التحميل...</p>`;
+  const { data, error } = await sb
+    .from("reports")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(100);
+  if (error) return (box.innerHTML = `<p class="empty">خطأ: ${error.message}</p>`);
+  if (!data.length) return (box.innerHTML = `<p class="empty">لم تضف أي بلاغ بعد</p>`);
+
+  box.innerHTML = "";
+  data.forEach((r) => {
+    const canDelete = new Date() - new Date(r.created_at) < 24 * 3600 * 1000;
+    const el = document.createElement("div");
+    el.className = "report-item";
+    el.innerHTML = `
+      <div class="row1">
+        <span class="badge ${r.reason}">${REASONS[r.reason]}</span>
+        <span class="date">طلب بتاريخ ${r.order_date}</span>
+      </div>
+      ${r.note ? `<div class="note">📝 ${escapeHtml(r.note)}</div>` : ""}
+      <div class="date" style="margin-top:6px">أُضيف ${formatDate(r.created_at)}</div>
+      ${canDelete ? `<button class="del">🗑 حذف (متاح خلال 24 ساعة)</button>` : ""}`;
+    if (canDelete) {
+      el.querySelector(".del").onclick = async () => {
+        if (!confirm("متأكد من حذف هذا البلاغ؟")) return;
+        const { error } = await sb.from("reports").delete().eq("id", r.id);
+        if (error) return toast(error.message, true);
+        toast("تم حذف البلاغ");
+        loadMyReports();
+      };
+    }
+    box.appendChild(el);
+  });
+}
+
+/* ---------- 4) لوحة الأدمن ---------- */
+async function loadAdmin() {
+  // بايعون بانتظار الموافقة
+  const pBox = $("pending-sellers");
+  pBox.innerHTML = `<p class="empty">جاري التحميل...</p>`;
+  const { data: pending } = await sb
+    .from("profiles")
+    .select("id,email,created_at")
+    .eq("approved", false)
+    .order("created_at", { ascending: false });
+
+  pBox.innerHTML = pending.length
+    ? ""
+    : `<p class="empty">لا يوجد حسابات بانتظار الموافقة</p>`;
+  pending.forEach((p) => {
+    const el = document.createElement("div");
+    el.className = "seller-item";
+    el.innerHTML = `
+      <div>
+        <div class="email">${escapeHtml(p.email)}</div>
+        <div class="date">سجّل ${formatDate(p.created_at)}</div>
+      </div>
+      <button class="btn-approve">موافقة ✓</button>`;
+    el.querySelector(".btn-approve").onclick = async () => {
+      const { error } = await sb.rpc("admin_approve_seller", { p_user: p.id });
+      if (error) return toast(error.message, true);
+      toast("تمت الموافقة على الحساب");
+      loadAdmin();
+    };
+    pBox.appendChild(el);
+  });
+
+  // كل البلاغات
+  const rBox = $("all-reports");
+  rBox.innerHTML = `<p class="empty">جاري التحميل...</p>`;
+  const { data: reports } = await sb
+    .from("reports")
+    .select("id,reason,order_date,note,created_at")
+    .order("created_at", { ascending: false })
+    .limit(100);
+
+  rBox.innerHTML = reports.length ? "" : `<p class="empty">لا يوجد بلاغات</p>`;
+  reports.forEach((r) => {
+    const el = document.createElement("div");
+    el.className = "report-item";
+    el.innerHTML = `
+      <div class="row1">
+        <span class="badge ${r.reason}">${REASONS[r.reason]}</span>
+        <span class="date">طلب بتاريخ ${r.order_date}</span>
+      </div>
+      ${r.note ? `<div class="note">📝 ${escapeHtml(r.note)}</div>` : ""}
+      <div class="date" style="margin-top:6px">أُضيف ${formatDate(r.created_at)}</div>
+      <button class="del" style="color:var(--danger)">🗑 حذف البلاغ</button>`;
+    el.querySelector(".del").onclick = async () => {
+      if (!confirm("حذف هذا البلاغ نهائياً؟")) return;
+      const { error } = await sb.rpc("admin_delete_report", { p_id: r.id });
+      if (error) return toast(error.message, true);
+      toast("تم الحذف");
+      loadAdmin();
+    };
+    rBox.appendChild(el);
+  });
+}
+
+/* ---------- أدوات مساعدة ---------- */
+function formatDate(iso) {
+  return new Date(iso).toLocaleDateString("ar-IQ", {
+    year: "numeric", month: "short", day: "numeric",
+    hour: "2-digit", minute: "2-digit",
+  });
+}
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])
+  );
+}
+
+/* تعيين تاريخ اليوم كافتراضي في نموذج التبليغ */
+$("report-date").valueAsDate = new Date();
+
+</script>
+</body>
+</html>
